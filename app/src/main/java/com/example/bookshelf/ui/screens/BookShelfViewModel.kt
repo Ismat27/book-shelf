@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
 private const val TAG = "BookShelfViewModel"
 
@@ -33,7 +35,7 @@ class BookShelfViewModel(private val bookRepository: BookRepository) : ViewModel
     private val _imageList = MutableStateFlow(emptyList<String>())
     val imageList: StateFlow<List<String>> = _imageList.asStateFlow()
 
-    var bookSelfUiState: BookShelfUiState by mutableStateOf(BookShelfUiState.Loading)
+    var bookSelfUiState: BookShelfUiState by mutableStateOf(BookShelfUiState.Error)
         private set
 
     init {
@@ -55,17 +57,21 @@ class BookShelfViewModel(private val bookRepository: BookRepository) : ViewModel
 
     fun getBookImages(searchTerm: String = "jazz history") {
         bookSelfUiState = BookShelfUiState.Loading
-        try {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            bookSelfUiState = try {
                 val searchResult = bookRepository.searchBooks(searchTerm).items
                 fetchImages(searchResult)
-                bookSelfUiState = BookShelfUiState.Success
+                BookShelfUiState.Success
+            } catch (e: IOException) {
+                Log.e(TAG, e.message ?: "error in getBookImages")
+                BookShelfUiState.Error
+            } catch (e: HttpException) {
+                Log.e(TAG, e.message ?: "HttpException in getBookImages")
+                BookShelfUiState.Error
             }
-        } catch (e: Exception) {
-            Log.e(TAG, e.message ?: "error in getBookImages")
-            bookSelfUiState = BookShelfUiState.Error
         }
     }
+
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
