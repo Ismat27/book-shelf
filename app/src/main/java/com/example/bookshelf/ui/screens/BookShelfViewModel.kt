@@ -12,7 +12,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.bookshelf.BookShelfApplication
 import com.example.bookshelf.models.Item
-import com.example.bookshelf.network.BookRepository
+import com.example.bookshelf.network.IBookRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +30,7 @@ sealed interface BookShelfUiState {
     data object Loading : BookShelfUiState
 }
 
-class BookShelfViewModel(private val bookRepository: BookRepository) : ViewModel() {
+class BookShelfViewModel(private val bookRepository: IBookRepository) : ViewModel() {
 
     private val _imageList = MutableStateFlow(emptyList<String>())
     val imageList: StateFlow<List<String>> = _imageList.asStateFlow()
